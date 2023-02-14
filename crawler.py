@@ -1,17 +1,33 @@
 #!/usr/bin/python3
-
 from __future__ import annotations
-from bs4 import BeautifulSoup
+
 import requests
+from dataclasses import dataclass
+from bs4 import BeautifulSoup
 
 
+@dataclass
 class Course:
-    """
-    Represent a course in school system.
-    Ex. ('INT2208 2', 'Công nghệ phần mềm', 'CL')
-    """
+    id: str
+    name: str
+    group: str
 
-    API_URL = "http://112.137.129.87/qldt"
+
+@dataclass
+class ScheduleCourse:
+    course: Course
+    weekDay: str
+    period: str
+    theater: str
+
+
+class CourseCrawler:
+
+    def __init__(self) -> CourseCrawler:
+        self.session = requests.Session()
+
+    SCHEDULE_URL = "http://112.137.129.115/tkb/listbylist.php"
+    COURSE_URL = "http://112.137.129.87/qldt"
     DEFAULT_PAYLOAD = {
         "SinhvienLmh[masvTitle]": "",
         "SinhvienLmh[hotenTitle]": "",
@@ -28,62 +44,80 @@ class Course:
         "pageSize": "5000"
     }
 
-    @staticmethod
-    def fetch_courses(student_id: str, term_id: str) -> list[Course]:
+    def create_params(self, student_id: str, term_id: str):
+        params = CourseCrawler.DEFAULT_PAYLOAD.copy()
+        params["SinhvienLmh[masvTitle]"] = student_id
+        params["SinhvienLmh[term_id]"] = term_id
+
+        return params
+
+    def auto_detect_term_id(self) -> str:
+        """Auto detect term id code if not passed"""
+        res = self.session.get(CourseCrawler.COURSE_URL)
+        soup = BeautifulSoup(res.text, "lxml")
+
+        term_ids = [tag["value"] for tag in soup.select("#SinhvienLmh_term_id>option")]
+        # Pick the lastest term
+        return max(term_ids)
+
+    def fetch_courses(self, student_id: str, term_id: str = None) -> list[Course]:
         """Make API requests to get coursess of student"""
 
-        payload = Course.create_params(student_id, term_id)
-        res = requests.get(Course.API_URL, params=payload)
+        if term_id is None:
+            term_id = self.auto_detect_term_id()
+
+        payload = self.create_params(student_id, term_id)
+        res = self.session.get(CourseCrawler.COURSE_URL, params=payload)
 
         soup = BeautifulSoup(res.text, "lxml")
         table = soup.select_one("div#sinhvien-lmh-grid")
 
         courses = []
         for row in table.select("tbody>tr"):
-            columns = list(map(lambda tag: tag.get_text(), row.findChildren(name="td")))
+            columns = list(map(lambda tag: str(tag.get_text()), row.findChildren(name="td")))
             _id, name, group = columns[5:8]  # interesting column
 
             courses.append(Course(_id, name, group))
 
         return courses
 
-    @staticmethod
-    def create_params(student_id: str, term_id: str):
-        params = Course.DEFAULT_PAYLOAD.copy()
-        params["SinhvienLmh[masvTitle]"] = student_id
-        params["SinhvienLmh[term_id]"] = term_id
+    def fetch_schedule(self, courses: list[Course]) -> list[ScheduleCourse]:
 
-        return params
+        res = self.session.get(CourseCrawler.SCHEDULE_URL)
 
-    def __init__(self, _id: str, name: str, group: str) -> None:
-        self.id = _id
-        self.name = name
-        self.group = group
+        soup = BeautifulSoup(res.text, "lxml")
+        table = soup.select_one("table:nth-child(4)")
 
-    def __str__(self) -> str:
-        return self.__repr__()
+        schedule_courses = []
+        course_ids = {course.id: course for course in courses}
+        for row in table.select("tr"):
+            columns = list(map(lambda tag: tag.get_text(), row.findChildren(name="td")))
 
-    def __repr__(self) -> str:
-        return f"{self.id}, {self.name}, {self.group}"
+            # Not a valid column
+            if len(columns) < 12:
+                continue
 
-    def __eq__(self, __o: object) -> bool:
-        if isinstance(__o, Course):
-            return self.id == __o.id
+            _id = columns[4]
+            name = columns[2]
+            group = columns[11]
+            weekDay = columns[8]
+            period = columns[9]
+            theater = columns[10]
 
-    def __hash__(self) -> int:
-        return hash(self.id)
+            if _id not in course_ids.keys():
+                continue
+
+            if group != "CL" and group != course_ids[_id].group:
+                continue
+
+            course = Course(_id, name, group)
+            schedule_course = ScheduleCourse(course, weekDay, period, theater)
+
+            schedule_courses.append(schedule_course)
+
+        return schedule_courses
 
 
-class ScheduleCourse:
-
-    API_URL = "http://112.137.129.115/tkb/listbylist.php"
-
-    def __init__(self, course: Course, weekDay, period, lecture_theater) -> ScheduleCourse:
-        self.course = course
-        self.weekDay = weekDay
-        self.period = period
-        self.theater = lecture_theater
-
-    @staticmethod
-    def fetch_schedule(courses: list[Course]) -> list[ScheduleCourse]:
-        pass
+if __name__ == "__main__":
+    crawler = CourseCrawler()
+    print(crawler.fetch_courses("21020782"))

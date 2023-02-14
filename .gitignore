@@ -1,6 +1,8 @@
 # Project specific
-.vs_code/
+.vscode/
+secret/
 *.html
+test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

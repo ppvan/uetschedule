@@ -7,6 +7,12 @@ name = "pypi"
 requests = "*"
 beautifulsoup4 = "*"
 lxml = "*"
+cchardet = "*"
+google-auth = "*"
+google-api-python-client = "*"
+google-auth-oauthlib = "*"
+google-auth-httplib2 = "*"
+python-dateutil = "*"
 
 [dev-packages]
 autopep8 = "*"
