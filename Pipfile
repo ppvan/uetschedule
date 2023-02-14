@@ -13,6 +13,8 @@ google-api-python-client = "*"
 google-auth-oauthlib = "*"
 google-auth-httplib2 = "*"
 python-dateutil = "*"
+halo = "*"
+click = "*"
 
 [dev-packages]
 autopep8 = "*"

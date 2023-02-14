@@ -3,10 +3,13 @@ from crawler import ScheduleCourse, CourseCrawler
 from calendars import Event, GoogleCalendarService
 
 import webbrowser
+import halo
 from dateutil import rrule
 from datetime import time, datetime, timedelta
 
 SEMESTER_WEEKS = 16
+
+DEFAULT_CALENDAR = "Schedule"
 
 LESSON_TIME = {
     "1": time(7, 0, 0),
@@ -32,27 +35,42 @@ class SchedulerService:
         self.crawler = CourseCrawler()
         self.calendar_service = GoogleCalendarService()
 
-    def schedule_courses(self, student_id: str, user_mail: str):
+    def fetch_schedule_from_server(self, student_id: str, term_id: str = None):
+        student_courses = self.crawler.fetch_courses(student_id, term_id)
+        scheduled_courses = self.crawler.fetch_schedule(student_courses)
+
+        return scheduled_courses
+
+    def schedule_courses(self, student_id: str, user_mail: str, calendar_name: str = DEFAULT_CALENDAR):
         """
         Schedule student courses in google calenlar and share it to user_mail.
         This also open browser to that URL
         student_id: The UET student id. E.g 21020782
-        user_mail: An normal gmail abc@gmail.com .
+        user_mail: An normal gmail abc@gmail.com.
+        They are stored in info dictionary. e.g info["student_id"]
         """
-        student_courses = self.crawler.fetch_courses(student_id, term_id)
-        scheduled_courses = self.crawler.fetch_schedule(student_courses)
 
-        calendar = self.calendar_service.create_calendar("Hello world")
+        spinner = halo.Halo(text="Fetch schedule from school API", spinner="dots")
+        spinner.start()
+        scheduled_courses = self.fetch_schedule_from_server(student_id)
+        spinner.stop_and_persist("✔", f"Got {len(scheduled_courses)} courses.")
+
+        spinner.text = "Create the calendar."
+        spinner.start()
+        calendar = self.calendar_service.create_calendar(calendar_name)
         self.calendar_service.share_calendar_with_user(calendar.id, user_mail)
-
         all_events = []
         for course in scheduled_courses:
             course_events = self.create_course_events(course)
             all_events.extend(course_events)
+        spinner.stop_and_persist("✔", f"Succeeded. {calendar_name} is created.")
 
+        spinner.text = "Create events on Google Calendar. This may take a few minutes."
+        spinner.start()
         for event in all_events:
             self.calendar_service.create_event(event, calendar)
 
+        spinner.stop_and_persist("✔", "Done, opening the browser.")
         invite_link = f"https://calendar.google.com/calendar/u/0?cid={calendar.id}&invite={user_mail}"
         # Open invite link in user browser
         webbrowser.open(invite_link)
