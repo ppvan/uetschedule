@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+          fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -24,12 +26,14 @@ jobs:
         pip install wheel
         pip install twine
 
-    - name: Check if version changed
-      id: version-check
-      run: echo ::set-output name=is_changed::$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep setup.py)
+    - name: Get changed files in the docs folder
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v35
+        with:
+          files: setup.py
 
     - name: Build package and publish to PyPI
-      if: steps.version-check.outputs.is_changed
+      if: steps.changed-files-specific.outputs.any_changed == 'true'
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
