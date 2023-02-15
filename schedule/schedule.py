@@ -1,4 +1,4 @@
-
+from typing import List
 from crawler import ScheduleCourse, CourseCrawler
 from calendars import Event, GoogleCalendarService
 
@@ -84,7 +84,7 @@ class SchedulerService:
 
         return LESSON_TIME[start], LESSON_TIME[str(int(end) + 1)]
 
-    def create_course_events(self, course: ScheduleCourse, repeat=SEMESTER_WEEKS) -> list[Event]:
+    def create_course_events(self, course: ScheduleCourse, repeat=SEMESTER_WEEKS) -> List[Event]:
         start, end = self.convert_period_to_time(course.period)
 
         week_rule = rrule.weekday(int(course.weekDay) - 2)

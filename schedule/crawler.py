@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from __future__ import annotations
-
+from typing import List
 import requests
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
@@ -60,7 +60,7 @@ class CourseCrawler:
         # Pick the lastest term
         return max(term_ids)
 
-    def fetch_courses(self, student_id: str, term_id: str = None) -> list[Course]:
+    def fetch_courses(self, student_id: str, term_id: str = None) -> List[Course]:
         """Make API requests to get coursess of student"""
 
         if term_id is None:
@@ -81,7 +81,7 @@ class CourseCrawler:
 
         return courses
 
-    def fetch_schedule(self, courses: list[Course]) -> list[ScheduleCourse]:
+    def fetch_schedule(self, courses: List[Course]) -> List[ScheduleCourse]:
 
         res = self.session.get(CourseCrawler.SCHEDULE_URL)
 

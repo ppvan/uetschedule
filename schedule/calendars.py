@@ -13,6 +13,7 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 KEY_FILE_PATH = "secret/autoschedule.json"
 
+# Security risk, i admit.
 CLIENT_INFO = {
     "type": "service_account",
     "project_id": "autoschedule-377806",
