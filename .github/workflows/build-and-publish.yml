@@ -26,7 +26,7 @@ jobs:
         pip install wheel
         pip install twine
 
-    - name: Get changed files in the docs folder
+    - name: Check if setup.py is changed
       id: changed-files-specific
       uses: tj-actions/changed-files@v35
       with:
