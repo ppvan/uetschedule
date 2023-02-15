@@ -1,11 +1,11 @@
-# AutoSchedule
+# UETSchedule
 
-AutoSchedule is a Python package that automates the process of scheduling courses at UET. It is designed to save students time and effort in creating their schedules.
+UETSchedule is a Python script that automates the process of scheduling courses at UET. It is designed to save students time and effort in creating their schedules.
 ## Installation
 
 You can install AutoSchedule using pip. First, make sure you have Python 3.7 or higher installed. Then, open a terminal window and type the following command:
 ```bash
-pip install AutoSchedule
+pip install UETSchedule
 ```
 If you're using virtualenv, you can activate your environment first and then run the command above.
 Usage
