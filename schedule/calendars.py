@@ -97,7 +97,26 @@ class GoogleCalendarService:
         except HttpError as error:
             print('An error occurred: %s' % error)
 
-    def create_event(self, event: Event, calendar: Calendar = None):
+    def batch_multiple_events(self, events: List[Event], calendar: Calendar = None):
+
+        google_calendar_events = [self._convert_to_google_calendar_event(event)
+                                  for event in events]
+
+        # Batch insert events
+        try:
+            batch = self.service.new_batch_http_request()
+            calendar_id = calendar.id if calendar is not None else "primary"
+
+            for e in google_calendar_events:
+                batch.add(self.service.events().insert(calendarId=calendar_id, body=e))
+
+            batch.execute()
+        except HttpError as error:
+            print('An error occurred: %s' % error)
+
+        pass
+
+    def _convert_to_google_calendar_event(self, event: Event):
         start_time = event.start_time.replace(tzinfo=tz.tzlocal())
         end_time = event.end_time.replace(tzinfo=tz.tzlocal())
 
@@ -119,9 +138,7 @@ class GoogleCalendarService:
             },
         }
 
-        # Call API to create events on google calendar
-        try:
-            calendar_id = calendar.id if calendar is not None else "primary"
-            self.service.events().insert(calendarId=calendar_id, body=event_body).execute()
-        except HttpError as error:
-            print("An error occurred: %s" % error)
+        return event_body
+
+    def create_event(self, event: Event, calendar: Calendar = None):
+        self.batch_multiple_events([event], calendar)

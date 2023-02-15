@@ -67,8 +67,8 @@ class SchedulerService:
 
         spinner.text = "Create events on Google Calendar. This may take a few minutes."
         spinner.start()
-        for event in all_events:
-            self.calendar_service.create_event(event, calendar)
+
+        self.calendar_service.batch_multiple_events(all_events, calendar)
 
         spinner.stop_and_persist("✔", "Done, opening the browser.")
         invite_link = f"https://calendar.google.com/calendar/u/0?cid={calendar.id}&invite={user_mail}"
