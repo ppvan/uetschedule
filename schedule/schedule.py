@@ -1,6 +1,6 @@
 from typing import List
-from crawler import ScheduleCourse, CourseCrawler
-from calendars import Event, GoogleCalendarService
+from .crawler import ScheduleCourse, CourseCrawler
+from .calendars import Event, GoogleCalendarService
 
 import webbrowser
 import halo

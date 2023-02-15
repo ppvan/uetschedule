@@ -1,7 +1,7 @@
 import click
 import re
-import schedule
-from schedule import SchedulerService
+from . import schedule
+from .schedule import SchedulerService
 
 
 def validate_student_id(ctx, param, value):
