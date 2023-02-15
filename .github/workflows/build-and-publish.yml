@@ -27,10 +27,10 @@ jobs:
         pip install twine
 
     - name: Get changed files in the docs folder
-        id: changed-files-specific
-        uses: tj-actions/changed-files@v35
-        with:
-          files: setup.py
+      id: changed-files-specific
+      uses: tj-actions/changed-files@v35
+      with:
+        files: setup.py
 
     - name: Build package and publish to PyPI
       if: steps.changed-files-specific.outputs.any_changed == 'true'
