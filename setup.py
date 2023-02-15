@@ -14,7 +14,7 @@ setup(
     author_email='phuclaplace@gmail.com',
     license='GPL-3.0',
     classifiers=[
-        'Development Status :: 3 - Beta',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
