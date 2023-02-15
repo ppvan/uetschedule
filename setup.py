@@ -4,8 +4,8 @@ with open('README.md', 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='AutoSchedule',
-    version='0.1.0',
+    name='UETSchedule',
+    version='0.1.2',
     description='A script to auto schedule UET courses',
     long_description=long_description,
     long_description_content_type='text/markdown',
